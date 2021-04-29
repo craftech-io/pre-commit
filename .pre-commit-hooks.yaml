@@ -8,3 +8,9 @@
   files: \.tf$
   exclude: \.+.terraform\/.*$
   require_serial: true
+
+- id: pipeline-generator
+  name: pipeline-generator
+  description: Generate ci config automatically.
+  entry: hooks/pipeline-generator.sh
+  language: script
