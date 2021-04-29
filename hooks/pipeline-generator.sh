@@ -5,7 +5,7 @@
 # brew install pre-commit gawk terraform-docs tflint tfsec coreutils checkov terrascan
 
 # Install pipeline generator.
-pip3 install git+ssh://git@github.com/craftech-io/module-ci.git@feature/gitlab-ci-helper#subdirectory=modules/gitlab-ci-helpers/pipeline-generator
+pip install -U git+ssh://git@github.com/craftech-io/module-ci.git@feature/gitlab-ci-helper#subdirectory=modules/gitlab-ci-helpers/pipeline-generator
 
 # Clean cache.
 find . -type d -name ".terragrunt-cache" -prune -exec rm -rf {} \;
