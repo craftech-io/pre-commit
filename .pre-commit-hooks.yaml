@@ -14,3 +14,4 @@
   description: Generate ci config automatically.
   entry: hooks/pipeline-generator.sh
   language: script
+  pass_filenames: false
