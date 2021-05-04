@@ -6,6 +6,15 @@
 
 set -e 
 
+# Load variables in .pgen-env
+source .pgen-env
+
+# Check if variables are loaded.
+if [ -z "$PGEN_EXTRA_KNOW_HOST" ]; then echo "set \$PGEN_EXTRA_KNOW_HOST variable." && exit 1; fi
+if [ -z "$PGEN_IMAGE" ]; then echo "set \$PGEN_IMAGE variable." && exit 1; fi
+if [ -z "$PGEN_PROVIDER" ]; then echo "set \$PGEN_PROVIDER variable." && exit 1; fi
+if [ -z "$PGEN_OUTPUT_FILE" ]; then echo "set \$PGEN_OUTPUT_FILE variable." && exit 1; fi
+
 # Install pipeline generator.
 if ! command -v pipeline-generator &> /dev/null
 then
@@ -16,9 +25,7 @@ fi
 # Clean cache.
 find . -type d -name ".terragrunt-cache" -prune -exec rm -rf {} \;
 
-# Generate gitlab-ci.yml
-if [ -z "$EXTRA_KNOW_HOST" ]; then echo "set \$EXTRA_KNOW_HOST variable." && exit 1; fi
-pipeline-generator -i "craftech/ci-tools:iac-tools-latest" -e $EXTRA_KNOW_HOST -o .gitlab-ci.yml -p gitlab
+pipeline-generator -i $PGEN_IMAGE -e $EXTRA_KNOW_HOST -o $PGEN_OUTPUT_FILE -p $PGEN_PROVIDER
 
 # Add to commit.
-git add .gitlab-ci.yml
+git add $PGEN_OUTPUT_FILE
