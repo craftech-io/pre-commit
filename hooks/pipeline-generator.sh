@@ -25,7 +25,7 @@ fi
 # Clean cache.
 find . -type d -name ".terragrunt-cache" -prune -exec rm -rf {} \;
 
-pipeline-generator -i $PGEN_IMAGE -e $EXTRA_KNOW_HOST -o $PGEN_OUTPUT_FILE -p $PGEN_PROVIDER
+pipeline-generator -i $PGEN_IMAGE -e $PGEN_EXTRA_KNOW_HOST -o $PGEN_OUTPUT_FILE -p $PGEN_PROVIDER
 
 # Add to commit.
-git add $PGEN_OUTPUT_FILE
+git add .
