@@ -7,6 +7,7 @@
 set -e 
 
 # Load variables defined in .pgen-env
+if [ -z ".pgen-env" ]; then echo "Create and define vars in .pgen-env fiel." && exit 1; fi
 . .pgen-env
 
 # Check if variables are loaded.
