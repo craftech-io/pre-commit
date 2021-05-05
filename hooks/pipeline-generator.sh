@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Run pre-commits-hooks
 # Install these tools.
@@ -6,8 +6,8 @@
 
 set -e 
 
-# Load variables in .pgen-env
-source .pgen-env
+# Load variables defined in .pgen-env
+. .pgen-env
 
 # Check if variables are loaded.
 if [ -z "$PGEN_EXTRA_KNOW_HOST" ]; then echo "set \$PGEN_EXTRA_KNOW_HOST variable." && exit 1; fi
