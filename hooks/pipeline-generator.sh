@@ -20,7 +20,7 @@ if [ -z "$PGEN_OUTPUT_FILE" ]; then echo "set \$PGEN_OUTPUT_FILE variable." && e
 if ! command -v pipeline-generator &> /dev/null
 then
     echo "installing pipeline-generator"
-    pip install -U git+ssh://git@github.com/craftech-io/module-ci.git@feature/gitlab-ci-helper#subdirectory=modules/gitlab-ci-helpers/pipeline-generator
+    pip install -U git+https://git@github.com/craftech-io/pipeline-generator.git@v0.6.2
 fi
 
 # Clean cache.
