@@ -15,10 +15,3 @@
   entry: hooks/pipeline-generator.sh
   language: script
   pass_filenames: false
-
-- id: pipeline-generator-docker
-  name: pipeline-generator-docker
-  description: Generate ci config automatically.
-  entry: hooks/pipeline-generator-docker.sh
-  language: script
-  pass_filenames: false
