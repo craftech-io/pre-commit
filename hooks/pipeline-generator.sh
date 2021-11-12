@@ -24,7 +24,7 @@ if [ -z "$PGEN_VAULT_AUTH_METHOD" ]; then echo "set \$PGEN_VAULT_AUTH_METHOD." &
 if ! command -v pipeline-generator &> /dev/null
 then
     echo "installing pipeline-generator"
-    pip install -U git+https://git@github.com/craftech-io/pipeline-generator.git@v0.8.3
+    pip install -U git+https://git@github.com/craftech-io/pipeline-generator.git@v0.8.4
 fi
 
 # Clean cache.
