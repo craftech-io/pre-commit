@@ -6,7 +6,16 @@
   entry: hooks/terraform-fmt.sh
   language: script
   files: \.tf$
-  exclude: \.+.terraform\/.*$
+  exclude: '(^|.*/)(\.terraform|examples)/'
+  require_serial: true
+
+- id: terraform-validate
+  name: Terraform validate
+  description: Runs 'terraform validate'
+  entry: hooks/terraform-validate.sh
+  language: script
+  files: \.tf$
+  exclude: '(^|.*/)(\.terraform|examples)/'
   require_serial: true
 
 - id: pipeline-generator
@@ -15,3 +24,4 @@
   entry: hooks/pipeline-generator.sh
   language: script
   pass_filenames: false
+
