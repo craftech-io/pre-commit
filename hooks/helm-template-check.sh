@@ -53,28 +53,66 @@ for chart_dir in "${CHART_DIRS[@]}"; do
   
   pushd "$chart_dir" >/dev/null
   
-  # Verificar si existe values.yaml
-  values_file="values.yaml"
-  if [[ ! -f "$values_file" ]]; then
+  # Recolectar archivos de values para probar
+  # 1. values.yaml (base)
+  # 2. tests/values-*.yaml (casos de prueba)
+  mapfile -t VALUES_FILES < <(
+    [[ -f "values.yaml" ]] && echo "values.yaml"
+    find tests -name "values-*.yaml" 2>/dev/null | sort
+  )
+  
+  if [[ "${#VALUES_FILES[@]}" -eq 0 ]]; then
     echo -e "  ${YLW}! Skipped (no existe values.yaml)${RST}"
     popd >/dev/null
     echo
     continue
   fi
   
-  set +e
-  # Ejecutar helm template solo para verificar que renderice sin errores
-  # No validamos el output, solo que pueda generar algo
-  out="$(helm template test-release . --values "$values_file" 2>&1 >/dev/null)"
-  status=$?
-  set -e
+  # Probar con cada archivo de values
+  chart_failed=0
+  for values_file in "${VALUES_FILES[@]}"; do
+    echo -e "  ${BLD}Testing with: ${values_file}${RST}"
+    
+    set +e
+    # Ejecutar helm template y capturar output
+    out="$(helm template test-release . --values "$values_file" 2>&1)"
+    status=$?
+    set -e
+    
+    if [[ $status -ne 0 ]]; then
+      echo -e "    ${RED}✗ Error al renderizar templates${RST}"
+      echo "$out" | sed 's/^/      /'
+      chart_failed=1
+      exit_code=1
+    else
+      # Validar que el YAML renderizado sea parseable
+      set +e
+      yaml_validation=$(echo "$out" | python3 -c "
+import yaml
+import sys
+try:
+    list(yaml.safe_load_all(sys.stdin))
+    print('valid')
+except yaml.YAMLError as e:
+    print(f'YAML Error: {e}', file=sys.stderr)
+    sys.exit(1)
+" 2>&1)
+      yaml_status=$?
+      set -e
+      
+      if [[ $yaml_status -eq 0 ]]; then
+        echo -e "    ${GRN}✓ Renderiza y genera YAML válido${RST}"
+      else
+        echo -e "    ${RED}✗ Genera YAML inválido${RST}"
+        echo "$yaml_validation" | sed 's/^/      /'
+        chart_failed=1
+        exit_code=1
+      fi
+    fi
+  done
   
-  if [[ $status -eq 0 ]]; then
-    echo -e "  ${GRN}✓ Templates renderizan correctamente${RST}"
-  else
-    echo -e "  ${RED}✗ Error al renderizar templates${RST}"
-    echo "$out" | sed 's/^/    /'
-    exit_code=1
+  if [[ $chart_failed -eq 0 ]]; then
+    echo -e "  ${GRN}✓ Todos los valores renderizan correctamente${RST}"
   fi
   
   popd >/dev/null
