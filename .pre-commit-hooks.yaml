@@ -1,4 +1,6 @@
-# This configuration file allows our pre-commit hooks to be used with pre-commit: http://pre-commit.com/
+---
+# This configuration file allows our pre-commit hooks to be used with
+# pre-commit: http://pre-commit.com/
 
 - id: terraform-fmt
   name: Terraform fmt
