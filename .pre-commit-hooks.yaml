@@ -4,7 +4,7 @@
   name: Terraform fmt
   description: Rewrites all Terraform configuration files to a canonical format
   entry: hooks/terraform-fmt.sh
-  language: script
+  language: system
   files: \.tf$
   exclude: '(^|.*/)(\.terraform|examples)/'
   require_serial: true
@@ -13,7 +13,7 @@
   name: Terraform validate
   description: Runs 'terraform validate'
   entry: hooks/terraform-validate.sh
-  language: script
+  language: system
   files: \.tf$
   exclude: '(^|.*/)(\.terraform|examples)/'
   require_serial: true
@@ -25,3 +25,29 @@
   language: script
   pass_filenames: false
 
+- id: helm-lint
+  name: Helm lint
+  description: Runs 'helm lint' on Helm charts
+  entry: hooks/helm-lint.sh
+  language: system
+  files: (Chart\.yaml|values.*\.yaml|templates/.*\.yaml)$
+  exclude: '(^|.*/)(\.terraform|examples)/'
+  require_serial: true
+
+- id: yamllint
+  name: YAML Lint
+  description: Validates YAML syntax and style
+  entry: hooks/yamllint.sh
+  language: system
+  files: \.(yaml|yml)$
+  exclude: '(^|.*/)(\.terraform|examples)/'
+  require_serial: false
+
+- id: helm-template-check
+  name: Helm template check
+  description: Validates that Helm templates can render without errors
+  entry: hooks/helm-template-check.sh
+  language: system
+  files: (Chart\.yaml|values.*\.yaml|templates/.*\.yaml)$
+  exclude: '(^|.*/)(\.terraform|examples)/'
+  require_serial: true
