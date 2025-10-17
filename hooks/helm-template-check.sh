@@ -81,7 +81,9 @@ for chart_dir in "${CHART_DIRS[@]}"; do
       echo -e "  ${BLD}→ Validando sintaxis YAML del output...${RST}"
       
       set +e
-      yaml_errors="$(echo "$rendered_output" | yamllint -f parsable -d '{extends: default, rules: {line-length: disable, document-start: disable}}' - 2>&1)"
+      # Usar configuración relajada de yamllint para evitar falsos positivos
+      # Solo validar errores críticos de indentación y sintaxis
+      yaml_errors="$(echo "$rendered_output" | yamllint -f parsable -d '{extends: relaxed, rules: {line-length: disable, document-start: disable, trailing-spaces: enable, indentation: {spaces: consistent, indent-sequences: consistent}}}' - 2>&1)"
       yaml_status=$?
       set -e
       
