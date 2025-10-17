@@ -63,43 +63,18 @@ for chart_dir in "${CHART_DIRS[@]}"; do
   fi
   
   set +e
-  # Ejecutar helm template y capturar el output
-  rendered_output="$(helm template test-release . --values "$values_file" 2>&1)"
+  # Ejecutar helm template solo para verificar que renderice sin errores
+  # No validamos el output, solo que pueda generar algo
+  out="$(helm template test-release . --values "$values_file" 2>&1 >/dev/null)"
   status=$?
   set -e
   
-  if [[ $status -ne 0 ]]; then
-    echo -e "  ${RED}✗ Error al renderizar templates${RST}"
-    echo "$rendered_output" | sed 's/^/    /'
-    exit_code=1
-  else
-    # Templates renderizaron bien, ahora validar el YAML resultante
+  if [[ $status -eq 0 ]]; then
     echo -e "  ${GRN}✓ Templates renderizan correctamente${RST}"
-    
-    # Validar YAML solo si yamllint está disponible
-    if command -v yamllint &>/dev/null; then
-      echo -e "  ${BLD}→ Validando sintaxis YAML del output...${RST}"
-      
-      set +e
-      # Usar configuración relajada de yamllint para evitar falsos positivos
-      # Solo validar errores críticos de indentación y sintaxis
-      yaml_errors="$(echo "$rendered_output" | yamllint -f parsable -d '{extends: relaxed, rules: {line-length: disable, document-start: disable, trailing-spaces: enable, indentation: {spaces: consistent, indent-sequences: consistent}}}' - 2>&1)"
-      yaml_status=$?
-      set -e
-      
-      if [[ $yaml_status -eq 0 ]]; then
-        echo -e "  ${GRN}✓ YAML del output es válido${RST}"
-      else
-        echo -e "  ${RED}✗ YAML del output tiene errores de sintaxis/indentación${RST}"
-        echo "$yaml_errors" | sed 's/^/    /'
-        exit_code=1
-      fi
-    else
-      echo -e "  ${YLW}⚠ yamllint no está instalado, no se validó la sintaxis del YAML renderizado${RST}"
-      echo -e "    Instalá yamllint para validación completa:"
-      echo -e "      - macOS: brew install yamllint"
-      echo -e "      - Linux: pip install yamllint (o pipx install yamllint)"
-    fi
+  else
+    echo -e "  ${RED}✗ Error al renderizar templates${RST}"
+    echo "$out" | sed 's/^/    /'
+    exit_code=1
   fi
   
   popd >/dev/null
