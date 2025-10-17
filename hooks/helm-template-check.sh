@@ -62,29 +62,53 @@ for chart_dir in "${CHART_DIRS[@]}"; do
     continue
   fi
   
-  set +e
-  # Ejecutar helm template solo para verificar que renderice sin errores
-  # No validamos el output, solo que pueda generar algo
-  out="$(helm template test-release . --values "$values_file" 2>&1 >/dev/null)"
-  status=$?
-  set -e
+  # Array para almacenar archivos de valores a probar
+  declare -a values_files=("$values_file")
   
-  if [[ $status -eq 0 ]]; then
-    echo -e "  ${GRN}✓ Templates renderizan correctamente${RST}"
-  else
-    echo -e "  ${RED}✗ Error al renderizar templates${RST}"
-    echo "$out" | sed 's/^/    /'
-    exit_code=1
+  # Buscar archivos de ejemplo en examples/
+  if [[ -d "examples" ]]; then
+    while IFS= read -r -d '' example_file; do
+      values_files+=("$example_file")
+    done < <(find examples -type f \( -name "*.yaml" -o -name "*.yml" \) -print0 2>/dev/null | sort -z)
   fi
+  
+  echo -e "  ${BLD}Casos de prueba encontrados: ${#values_files[@]}${RST}"
+  
+  # Iterar sobre todos los archivos de valores
+  for values_test_file in "${values_files[@]}"; do
+    # Obtener nombre descriptivo del archivo
+    if [[ "$values_test_file" == "values.yaml" ]]; then
+      test_name="valores por defecto"
+    else
+      test_name="$(basename "$values_test_file")"
+    fi
+    
+    echo -e "  ${BLD}→ Probando: ${test_name}${RST}"
+    
+    set +e
+    # Ejecutar helm template solo para verificar que renderice sin errores
+    # No validamos el output, solo que pueda generar algo
+    out="$(helm template test-release . --values "$values_test_file" 2>&1 >/dev/null)"
+    status=$?
+    set -e
+    
+    if [[ $status -eq 0 ]]; then
+      echo -e "    ${GRN}✓ Templates renderizan correctamente${RST}"
+    else
+      echo -e "    ${RED}✗ Error al renderizar templates${RST}"
+      echo "$out" | sed 's/^/      /'
+      exit_code=1
+    fi
+  done
   
   popd >/dev/null
   echo
 done
 
 if [[ $exit_code -eq 0 ]]; then
-  echo -e "${GRN}✓ Todos los templates se renderizaron correctamente${RST}"
+  echo -e "${GRN}✓ Todos los templates se renderizaron correctamente con todos los casos de prueba${RST}"
 else
-  echo -e "${RED}✗ Algunos templates tienen errores${RST}"
+  echo -e "${RED}✗ Algunos templates tienen errores en uno o más casos de prueba${RST}"
 fi
 
 exit "$exit_code"
