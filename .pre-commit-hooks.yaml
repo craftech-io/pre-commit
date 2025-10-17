@@ -1,4 +1,6 @@
-# This configuration file allows our pre-commit hooks to be used with pre-commit: http://pre-commit.com/
+---
+# This configuration file allows our pre-commit hooks to be used with
+# pre-commit: http://pre-commit.com/
 
 - id: terraform-fmt
   name: Terraform fmt
@@ -25,3 +27,29 @@
   language: script
   pass_filenames: false
 
+- id: helm-lint
+  name: Helm lint
+  description: Runs 'helm lint' on Helm charts
+  entry: hooks/helm-lint.sh
+  language: script
+  files: (Chart\.yaml|values.*\.yaml|templates/.*\.yaml)$
+  exclude: '(^|.*/)(\.terraform|examples)/'
+  require_serial: true
+
+- id: yamllint
+  name: YAML Lint
+  description: Validates YAML syntax and style
+  entry: hooks/yamllint.sh
+  language: script
+  files: \.(yaml|yml)$
+  exclude: '(^|.*/)(\.terraform|examples)/'
+  require_serial: false
+
+- id: helm-template-check
+  name: Helm template check
+  description: Validates that Helm templates can render without errors
+  entry: hooks/helm-template-check.sh
+  language: script
+  files: (Chart\.yaml|values.*\.yaml|templates/.*\.yaml)$
+  exclude: '(^|.*/)(\.terraform|examples)/'
+  require_serial: true
