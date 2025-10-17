@@ -14,7 +14,8 @@ supported hooks are:
 ## Helm/Kubernetes Hooks
 
 * **helm-lint**: Executes `helm lint` on all Helm charts (directories with `Chart.yaml`). Validates chart structure, syntax, and best practices.
-* **helm-template-check**: Runs `helm template` to ensure templates can render without errors. Uses the default `values.yaml` file. Does not validate the output against Kubernetes schemas.
+* **helm-template-check**: Runs `helm template` to ensure templates can render without errors, then validates the YAML syntax of the rendered output using `yamllint`. This catches indentation errors and other YAML syntax issues in your templates. Uses the default `values.yaml` file.
+  > Note: Requires `yamllint` to be installed for full validation. Without it, only template rendering is checked.
 * **yamllint**: Validates YAML syntax and style for all `.yaml` and `.yml` files. Checks indentation, duplicates, trailing spaces, etc.
   > Note: Copy `.yamllint.yaml` to your repo root for custom configuration.
 
@@ -148,7 +149,8 @@ If yamllint reports too many warnings for your use case:
 
 Each hook requires specific tools to be installed:
 - **terraform-fmt, terraform-validate**: Requires Terraform CLI
-- **helm-lint, helm-template-check**: Requires Helm CLI
+- **helm-lint**: Requires Helm CLI
+- **helm-template-check**: Requires Helm CLI and yamllint (yamllint optional but recommended for full validation)
 - **yamllint**: Requires yamllint Python package
 
 Install missing tools before running `pre-commit install`.
