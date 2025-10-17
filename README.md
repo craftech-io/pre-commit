@@ -69,7 +69,7 @@ pip install pre-commit
 
 ### Installation
 
-**Step 1: Add the configuration file**
+### Step 1: Add the configuration file
 
 Create a `.pre-commit-config.yaml` file in the root of your repository:
 
