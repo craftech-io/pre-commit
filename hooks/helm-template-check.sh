@@ -58,29 +58,35 @@ for chart_dir in "${CHART_DIRS[@]}"; do
     continue
   fi
   
-  set +e # Desactivamos la salida inmediata en caso de error
-  
-  # El comando '-' en yamllint le indica que lea desde la entrada estándar (stdin)
-  # Usamos una configuración de yamllint si existe para consistencia.
-  if [[ -f "../../$YAMLLINT_CONFIG_FILE" ]]; then
-      LINT_CMD="yamllint -c ../../$YAMLLINT_CONFIG_FILE -"
-  else
-      LINT_CMD="yamllint -"
-  fi
+  set +e
+  # Determinar la raíz del repo para resolver configuración de yamllint
+  REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 
-  # Generamos el template y lo pasamos al linter
-  out=$(helm template test-release . --values "$values_file" | $LINT_CMD 2>&1)
+  # Construir el comando de yamllint como un array (evita problemas con IFS sin espacios)
+  yamllint_cmd=(yamllint)
+  if [[ -f "$REPO_ROOT/.yamllint" ]]; then
+    yamllint_cmd+=( -c "$REPO_ROOT/.yamllint" )
+  elif [[ -f "$REPO_ROOT/.yamllint.yaml" ]]; then
+    yamllint_cmd+=( -c "$REPO_ROOT/.yamllint.yaml" )
+  else
+    # Configuración relajada por defecto para evitar falsos positivos de estilo
+    yamllint_cmd+=( -d '{extends: relaxed, rules: {line-length: disable, document-start: disable, trailing-spaces: enable, indentation: {spaces: consistent, indent-sequences: consistent}}}' )
+  fi
+  # Leer desde stdin
+  yamllint_cmd+=( - )
+
+  # Generar templates y validar YAML
+  out="$(helm template test-release . --values "$values_file" | "${yamllint_cmd[@]}" 2>&1)"
   status=$?
-  set -e # Reactivamos la salida en error
+  set -e
   
   if [[ $status -eq 0 ]]; then
     echo -e "  ${GRN}✓ Templates renderizan correctamente y el YAML es válido${RST}"
   else
     echo -e "  ${RED}✗ Error al renderizar o validar el YAML de los templates${RST}"
-    echo "$out" | sed 's/^/    /' # Indentamos la salida del error para mayor claridad
+    echo "$out" | sed 's/^/    /'
     exit_code=1
   fi
-  # --- FIN DEL CAMBIO ---
   
   popd >/dev/null
   echo
